@@ -1,3 +1,4 @@
+from datetime import datetime
 import os
 import logging
 import requests
@@ -5,10 +6,10 @@ import sys
 
 from keystoneclient.v2_0 import client
 
-from cliff.lister import Lister
+from cliff.command import Command
 
 
-class Compute(Lister):
+class Compute(Command):
 
     log = logging.getLogger(__name__)
 
@@ -59,6 +60,10 @@ class Compute(Lister):
         self.tenant_name = os.environ.get("OS_TENANT_NAME")
         stats = self.hypervisors(self.tenant_id,self.compute_endpoint,self.token,self.tenant_name)
         self.log.debug(stats)
-        return (('Stat', 'Value'),
-                (stats[0].items())
-                )
+        self.app.stdout.write('datetime,')
+        self.app.stdout.write(",".join(stats[0].keys()))
+        self.app.stdout.write("\n")
+        for s in stats:
+            self.app.stdout.write(str(datetime.now()) + ",")
+            self.app.stdout.write(",".join([str(x) for x in s.values()]))
+            self.app.stdout.write("\n")

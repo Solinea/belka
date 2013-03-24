@@ -8,11 +8,16 @@
 """
 
 import logging
+import os
 import sys
+
+
+from keystoneclient.v2_0 import client
+
+import compute
 
 from cliff.app import App
 from cliff.commandmanager import CommandManager
-
 
 class BelkaApp(App):
 
@@ -22,7 +27,7 @@ class BelkaApp(App):
         super(BelkaApp, self).__init__(
             description='belka',
             version='0.1',
-            command_manager=CommandManager('belka'),
+            command_manager=CommandManager('cliff.belka'),
         )
 
     def initialize_app(self, argv):

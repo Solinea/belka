@@ -157,8 +157,7 @@ setup(
 
     scripts=[],
 
-    provides=['belka',
-              ],
+    provides=[],
     install_requires=install_requires,
 
     namespace_packages=[],
@@ -173,6 +172,12 @@ setup(
                                    ),
 
     entry_points={
+        'console_scripts': [
+             'belka = belka.belka:main'
+             ],
+        'cliff.belka': [
+            'compute = belka.compute:Compute',
+            ],
         },
 
     zip_safe=False,

@@ -8,16 +8,11 @@
 """
 
 import logging
-import os
 import sys
-
-
-from keystoneclient.v2_0 import client
-
-import compute
 
 from cliff.app import App
 from cliff.commandmanager import CommandManager
+
 
 class BelkaApp(App):
 

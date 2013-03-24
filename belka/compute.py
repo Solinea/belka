@@ -2,7 +2,6 @@ from datetime import datetime
 import os
 import logging
 import requests
-import sys
 
 from keystoneclient.v2_0 import client
 
@@ -10,14 +9,18 @@ from cliff.command import Command
 
 
 class Compute(Command):
+    '''Query compute nodes for statistics'''
 
     log = logging.getLogger(__name__)
+
+    def _headers(self,token,tenant_id):
+        return {"X-Auth-Token": token, "X-Auth-Project-Id": tenant_id,
+            "User-Agent": "belka", "Accept": "application/json"}
 
     def _hypervisor_list(self,tenant_id, compute_endpoint, token, tenant_name):
         '''Return a list of hypervisor ids in the compute environment'''
         url = ("%s/os-hypervisors" % compute_endpoint)
-        hdr = {"X-Auth-Token": token, "X-Auth-Project-Id": tenant_id,
-            "User-Agent": "belka", "Accept": "application/json"}
+        hdr = self._headers(token,tenant_id)
         r = requests.get(url, headers=hdr)
         self.log.debug(r.json())
         hid = [h['id'] for h in r.json()['hypervisors']]
@@ -26,8 +29,7 @@ class Compute(Command):
     def _hypervisor_detail(self,tenant_id, compute_endpoint, token, tenant_name, hid):
         '''Return dict of a specific hypervisor details'''
         url = ("%s/os-hypervisors/%s" % (compute_endpoint,str(hid)))
-        hdr = {"X-Auth-Token": token, "X-Auth-Project-Id": tenant_id,
-            "User-Agent": "belka", "Accept": "application/json"}
+        hdr = self._headers(token,tenant_id)
         r = requests.get(url, headers=hdr)
         stat = r.json()['hypervisor']
         return dict(memory_mb_used=stat['memory_mb_used'], memory_mb=stat['memory_mb'],

@@ -3,7 +3,7 @@
 PROJECT = 'belka'
 
 # Change docs/source/conf.py too!
-VERSION = '0.1'
+VERSION = '0.2'
 
 # Bootstrap installation of Distribute
 # import distribute_setup
@@ -133,24 +133,22 @@ setup(
     name=PROJECT,
     version=VERSION,
 
-    description='Command Line Interface Formulation Framework',
+    description='OpenStack Exploration Utility',
     long_description=long_description,
 
     author='Ken Pepple',
     author_email='ken@pepple.info',
 
-    url='https://bitbucket.org/ken_pepple/strelka/overview',
+    url='https://bitbucket.org/ken_pepple/belka',
     download_url='',
 
-    classifiers=['Development Status :: 5 - Production/Stable',
+    classifiers=['Development Status :: 2 - Pre-Alpha',
                  'License :: OSI Approved :: Apache Software License',
                  'Programming Language :: Python',
                  'Programming Language :: Python :: 2',
                  'Programming Language :: Python :: 2.7',
-                 'Programming Language :: Python :: 3',
-                 'Programming Language :: Python :: 3.2',
-                 'Intended Audience :: Developers',
                  'Environment :: Console',
+                 'Environment :: OpenStack',
                  ],
 
     platforms=['Any'],

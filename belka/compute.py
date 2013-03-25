@@ -12,10 +12,55 @@ class Compute(Command):
     '''Query compute nodes for statistics'''
 
     log = logging.getLogger(__name__)
+    
+    # show_individual_stats = True
+    # show_aggregate_stats = True
+    # show_header = True
+
+    def get_parser(self, prog_name):
+        parser = super(Compute, self).get_parser(prog_name)
+        parser.add_argument('--noheader', action='store_true', default = False)
+        parser.add_argument('--noindividual', action='store_true', default = False)
+        parser.add_argument('--noaggregate', action='store_true', default = False)
+        return parser
 
     def _headers(self,token,tenant_id):
         return {"X-Auth-Token": token, "X-Auth-Project-Id": tenant_id,
             "User-Agent": "belka", "Accept": "application/json"}
+
+    def _csv_header(self,keys):
+        self.app.stdout.write('datetime,')
+        self.app.stdout.write(",".join(keys))
+        self.app.stdout.write("\n")
+
+    def _individual_hypervisor_stats(self, stats):
+        for s in stats:
+            self.app.stdout.write(str(datetime.now()) + ",")
+            self.app.stdout.write(",".join([str(x) for x in s.values()]))
+            self.app.stdout.write("\n")
+
+    def _aggregate_hypervisor_stats(self, stats):
+        memory_mb = 0
+        current_workload = 0
+        vcpus = 0
+        running_vms = 0
+        vcpus_used = 0
+        memory_mb_used = 0
+        for s in stats:
+            memory_mb += s['memory_mb']
+            current_workload += s['current_workload']
+            vcpus += s['vcpus']
+            running_vms += s['running_vms']
+            vcpus_used += s['vcpus_used']
+            memory_mb_used += s['memory_mb_used']
+        self.app.stdout.write(str(datetime.now()) + ",")
+        self.app.stdout.write(str(memory_mb) + ",")
+        self.app.stdout.write(str(current_workload) + ",")
+        self.app.stdout.write(str(vcpus) + ",")
+        self.app.stdout.write(str(running_vms) + ",")
+        self.app.stdout.write(str(vcpus_used) + ",")
+        self.app.stdout.write(str(memory_mb_used) + ",")
+        self.app.stdout.write("All\n")
 
     def _hypervisor_list(self,tenant_id, compute_endpoint, token, tenant_name):
         '''Return a list of hypervisor ids in the compute environment'''
@@ -62,10 +107,9 @@ class Compute(Command):
         self.tenant_name = os.environ.get("OS_TENANT_NAME")
         stats = self.hypervisors(self.tenant_id,self.compute_endpoint,self.token,self.tenant_name)
         self.log.debug(stats)
-        self.app.stdout.write('datetime,')
-        self.app.stdout.write(",".join(stats[0].keys()))
-        self.app.stdout.write("\n")
-        for s in stats:
-            self.app.stdout.write(str(datetime.now()) + ",")
-            self.app.stdout.write(",".join([str(x) for x in s.values()]))
-            self.app.stdout.write("\n")
+        if parsed_args.noheader == False:
+            self._csv_header(stats[0].keys())
+        if parsed_args.noindividual == False:
+            self._individual_hypervisor_stats(stats)
+        if parsed_args.noaggregate == False:
+            self._aggregate_hypervisor_stats(stats)

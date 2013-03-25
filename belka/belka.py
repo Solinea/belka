@@ -27,6 +27,8 @@ class BelkaApp(App):
 
     def initialize_app(self, argv):
         self.log.debug('initialize_app')
+        requests_log = logging.getLogger("requests")
+        requests_log.setLevel(logging.WARNING)
 
     def prepare_to_run_command(self, cmd):
         self.log.debug('prepare_to_run_command %s', cmd.__class__.__name__)

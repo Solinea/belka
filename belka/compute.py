@@ -15,12 +15,15 @@ class Compute(Command):
 
     def get_parser(self, prog_name):
         parser = super(Compute, self).get_parser(prog_name)
-        parser.add_argument('--noheader', action='store_true',
-                            default=False)
-        parser.add_argument('--noindividual', action='store_true',
-                            default=False)
-        parser.add_argument('--noaggregate', action='store_true',
-                            default=False)
+        parser.add_argument('--noheader', '-r', action='store_true',
+                            default=False,
+                            help="Do not print header line")
+        parser.add_argument('--noindividual', '-i', action='store_true',
+                            default=False,
+                            help="Do not print individual hypervisor stats")
+        parser.add_argument('--noaggregate', '-a', action='store_true',
+                            default=False,
+                            help="Do not summarize hypervisor stats")
         return parser
 
     def _headers(self, token, tenant_id):
@@ -38,28 +41,25 @@ class Compute(Command):
             self.app.stdout.write(",".join([str(x) for x in s.values()]))
             self.app.stdout.write("\n")
 
-    def _aggregate_hypervisor_stats(self, stats):
-        memory_mb = 0
-        current_workload = 0
-        vcpus = 0
-        running_vms = 0
-        vcpus_used = 0
-        memory_mb_used = 0
-        for s in stats:
-            memory_mb += s['memory_mb']
-            current_workload += s['current_workload']
-            vcpus += s['vcpus']
-            running_vms += s['running_vms']
-            vcpus_used += s['vcpus_used']
-            memory_mb_used += s['memory_mb_used']
+    def _print_line(self, data):
         self.app.stdout.write(str(datetime.now()) + ",")
-        self.app.stdout.write(str(memory_mb) + ",")
-        self.app.stdout.write(str(current_workload) + ",")
-        self.app.stdout.write(str(vcpus) + ",")
-        self.app.stdout.write(str(running_vms) + ",")
-        self.app.stdout.write(str(vcpus_used) + ",")
-        self.app.stdout.write(str(memory_mb_used) + ",")
-        self.app.stdout.write("AllHosts\n")
+        self.app.stdout.write(str(data['memory_mb']) + ",")
+        self.app.stdout.write(str(data['current_workload']) + ",")
+        self.app.stdout.write(str(data['vcpus']) + ",")
+        self.app.stdout.write(str(data['running_vms']) + ",")
+        self.app.stdout.write(str(data['vcpus']) + ",")
+        self.app.stdout.write(str(data['memory_mb_used']) + ",")
+        self.app.stdout.write(str(data['hypervisor_hostname'])+ "\n")
+        pass
+
+    def aggregate_hypervisor(self, tenant_id, compute_endpoint,
+                             token, tenant_name):
+        url = ("%s/os-hypervisors/statistics" % compute_endpoint)
+        hdr = self._headers(token, tenant_id)
+        r = requests.get(url, headers=hdr)
+        stat = r.json()['hypervisor_statistics']
+        stat['hypervisor_hostname'] = "AllHosts"
+        return stat
 
     def _hypervisor_list(self, tenant_id, compute_endpoint,
                          token, tenant_name):
@@ -103,19 +103,24 @@ class Compute(Command):
             if serv["type"] == 'compute':
                 self.compute_endpoint = serv["endpoints"][0]['adminURL']
                 break
-        for serv in keystone.service_catalog.catalog["serviceCatalog"]:
-            if serv["type"] == 'object-store':
-                self.object_storage_endpoint = serv["endpoints"][0]['adminURL']
-                break
         self.token = keystone.auth_token
         self.tenant_id = keystone.tenant_id
         self.tenant_name = os.environ.get("OS_TENANT_NAME")
-        stats = self.hypervisors(self.tenant_id, self.compute_endpoint,
-                                 self.token, self.tenant_name)
-        self.log.debug(stats)
         if parsed_args.noheader is False:
-            self._csv_header(stats[0].keys())
+            h = dict(memory_mb_used="memory_mb_used",
+                    memory_mb="memory_mb",
+                    running_vms="running_vms",
+                    vcpus="vcpus", vcpus_used="vcpus_used",
+                    hypervisor_hostname="hypervisor_hostname",
+                    current_workload="current_workload")
+            self._csv_header(h)
         if parsed_args.noindividual is False:
-            self._individual_hypervisor_stats(stats)
+            stats = self.hypervisors(self.tenant_id, self.compute_endpoint,
+                                     self.token, self.tenant_name)
+            self.log.debug(stats)
+            for s in stats:
+                self._print_line(s)
         if parsed_args.noaggregate is False:
-            self._aggregate_hypervisor_stats(stats)
+            stat = self.aggregate_hypervisor(self.tenant_id, self.compute_endpoint,
+                                     self.token, self.tenant_name)
+            self._print_line(stat)

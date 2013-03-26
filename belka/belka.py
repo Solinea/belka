@@ -21,7 +21,7 @@ class BelkaApp(App):
     def __init__(self):
         super(BelkaApp, self).__init__(
             description='belka',
-            version='0.2.2',
+            version='0.2.3',
             command_manager=CommandManager('cliff.belka'),
         )
 

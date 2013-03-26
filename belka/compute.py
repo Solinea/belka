@@ -86,6 +86,7 @@ class Compute(Command):
                     current_workload=stat['current_workload'])
 
     def hypervisors(self, tenant_id, compute_endpoint, token, tenant_name):
+        '''Return a list of hypervisor stat dictionaries'''
         host_stats = []
         hypervisors = self._hypervisor_list(tenant_id, compute_endpoint,
                                             token, tenant_name)
@@ -113,7 +114,7 @@ class Compute(Command):
                      vcpus="vcpus", vcpus_used="vcpus_used",
                      hypervisor_hostname="hypervisor_hostname",
                      current_workload="current_workload")
-            self._csv_header(h)
+            self._print_line(h)
         if parsed_args.noindividual is False:
             stats = self.hypervisors(self.tenant_id, self.compute_endpoint,
                                      self.token, self.tenant_name)

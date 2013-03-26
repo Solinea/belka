@@ -12,7 +12,7 @@ Belka will query your Nova cluster to find the following stats per hypervisor:
 * current_workload
 * vcpus
 * running_vms
-* vcpus
+* vcpus_used
 * memory_mb_used
 * hypervisor_hostname
 
@@ -21,13 +21,13 @@ It can also summarize this information.
 Here is an example run of belka:
 
     $ belka compute
-    2013-03-26 05:59:37.166783,memory_mb,current_workload,vcpus,running_vms,vcpus,memory_mb_used,hypervisor_hostname
-    2013-03-26 05:59:37.604805,128916,0,32,1,32,10752,c13.b0.z1
-    2013-03-26 05:59:37.604881,128916,0,32,1,32,4772,c10.b0.z1
-    2013-03-26 05:59:37.604951,128915,0,32,0,32,3072,c9.b0.z1
-    2013-03-26 05:59:37.605020,128915,0,32,1,32,10752,c12.b0.z1
-    2013-03-26 05:59:37.605089,128916,0,32,0,32,3072,c11.b0.z1
-    2013-03-26 05:59:37.666876,644578,0,160,3,160,32420,AllHosts
+    2013-03-26 05:59:37.166783,memory_mb,current_workload,vcpus,running_vms,vcpus_used,memory_mb_used,hypervisor_hostname
+    2013-03-26 05:59:37.604805,128916,0,32,1,1,10752,c13.b0.z1
+    2013-03-26 05:59:37.604881,128916,0,32,1,1,4772,c10.b0.z1
+    2013-03-26 05:59:37.604951,128915,0,32,0,0,3072,c9.b0.z1
+    2013-03-26 05:59:37.605020,128915,0,32,1,2,10752,c12.b0.z1
+    2013-03-26 05:59:37.605089,128916,0,32,0,0,3072,c11.b0.z1
+    2013-03-26 05:59:37.666876,644578,0,160,3,4,32420,AllHosts
 
 
 ## Usage

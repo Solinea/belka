@@ -117,15 +117,15 @@ class Compute(Command):
                                      tenant_name=os.environ.get(
                                      "OS_TENANT_NAME"),
                                      auth_url=os.environ.get("OS_AUTH_URL"))
-            for serv in keystone.service_catalog.catalog["serviceCatalog"]:
-                if serv["type"] == 'compute':
-                    self.compute_endpoint = serv["endpoints"][0]['adminURL']
-                    break
-            self.token = keystone.auth_token
-            self.tenant_id = keystone.tenant_id
-            self.tenant_name = os.environ.get("OS_TENANT_NAME")
-        except:
-            exit(1)
+        except Exception, err:
+            raise RuntimeError(err)
+        for serv in keystone.service_catalog.catalog["serviceCatalog"]:
+            if serv["type"] == 'compute':
+                self.compute_endpoint = serv["endpoints"][0]['adminURL']
+                break
+        self.token = keystone.auth_token
+        self.tenant_id = keystone.tenant_id
+        self.tenant_name = os.environ.get("OS_TENANT_NAME")
         use_syslog = parsed_args.syslog
         if parsed_args.noheader is False:
             h = dict(memory_mb_used="memory_mb_used",

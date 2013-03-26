@@ -2,6 +2,7 @@ from datetime import datetime
 import os
 import logging
 import requests
+import syslog
 
 from keystoneclient.v2_0 import client
 
@@ -24,16 +25,17 @@ class Compute(Command):
         parser.add_argument('--noaggregate', '-a', action='store_true',
                             default=False,
                             help="Do not summarize hypervisor stats")
+        parser.add_argument('--syslog', '-s', action='store_true',
+                            default=False,
+                            help="Send to syslog instead of stdout")
+        parser.add_argument('--identifier', '-d', action='store',
+                            default=None,
+                            help="identifier string to be included in output")
         return parser
 
     def _headers(self, token, tenant_id):
         return {"X-Auth-Token": token, "X-Auth-Project-Id": tenant_id,
                 "User-Agent": "belka", "Accept": "application/json"}
-
-    def _csv_header(self, keys):
-        self.app.stdout.write('datetime,')
-        self.app.stdout.write(",".join(keys))
-        self.app.stdout.write("\n")
 
     def _individual_hypervisor_stats(self, stats):
         for s in stats:
@@ -41,16 +43,29 @@ class Compute(Command):
             self.app.stdout.write(",".join([str(x) for x in s.values()]))
             self.app.stdout.write("\n")
 
-    def _print_line(self, data):
-        self.app.stdout.write(str(datetime.now()) + ",")
-        self.app.stdout.write(str(data['memory_mb']) + ",")
-        self.app.stdout.write(str(data['current_workload']) + ",")
-        self.app.stdout.write(str(data['vcpus']) + ",")
-        self.app.stdout.write(str(data['running_vms']) + ",")
-        self.app.stdout.write(str(data['vcpus']) + ",")
-        self.app.stdout.write(str(data['memory_mb_used']) + ",")
-        self.app.stdout.write(str(data['hypervisor_hostname']) + "\n")
-        pass
+    def _print_line(self, data, use_syslog, idstring):
+        if use_syslog is True:
+            if os.uname()[0] == "Darwin":
+                syslog.openlog("Python")
+            message = ("%s,%s,%s,%s,%s,%s,%s" % (
+                       data['memory_mb'], data['current_workload'],
+                       data['vcpus'], data['running_vms'],
+                       data['vcpus'], data['memory_mb_used'],
+                       data['hypervisor_hostname']))
+            if idstring is not None:
+                message = ("%s,%s" % (idstring,message))
+            syslog.syslog(syslog.LOG_ALERT, message)
+        else:
+            self.app.stdout.write(str(datetime.now()) + ",")
+            if idstring is not None:
+                self.app.stdout.write(idstring + ",")
+            self.app.stdout.write(str(data['memory_mb']) + ",")
+            self.app.stdout.write(str(data['current_workload']) + ",")
+            self.app.stdout.write(str(data['vcpus']) + ",")
+            self.app.stdout.write(str(data['running_vms']) + ",")
+            self.app.stdout.write(str(data['vcpus']) + ",")
+            self.app.stdout.write(str(data['memory_mb_used']) + ",")
+            self.app.stdout.write(str(data['hypervisor_hostname']) + "\n")
 
     def aggregate_hypervisor(self, tenant_id, compute_endpoint,
                              token, tenant_name):
@@ -96,17 +111,22 @@ class Compute(Command):
         return host_stats
 
     def take_action(self, parsed_args):
-        keystone = client.Client(username=os.environ.get("OS_USERNAME"),
-                                 password=os.environ.get("OS_PASSWORD"),
-                                 tenant_name=os.environ.get("OS_TENANT_NAME"),
-                                 auth_url=os.environ.get("OS_AUTH_URL"))
-        for serv in keystone.service_catalog.catalog["serviceCatalog"]:
-            if serv["type"] == 'compute':
-                self.compute_endpoint = serv["endpoints"][0]['adminURL']
-                break
-        self.token = keystone.auth_token
-        self.tenant_id = keystone.tenant_id
-        self.tenant_name = os.environ.get("OS_TENANT_NAME")
+        try:
+            keystone = client.Client(username=os.environ.get("OS_USERNAME"),
+                                     password=os.environ.get("OS_PASSWORD"),
+                                     tenant_name=os.environ.get(
+                                     "OS_TENANT_NAME"),
+                                     auth_url=os.environ.get("OS_AUTH_URL"))
+            for serv in keystone.service_catalog.catalog["serviceCatalog"]:
+                if serv["type"] == 'compute':
+                    self.compute_endpoint = serv["endpoints"][0]['adminURL']
+                    break
+            self.token = keystone.auth_token
+            self.tenant_id = keystone.tenant_id
+            self.tenant_name = os.environ.get("OS_TENANT_NAME")
+        except:
+            exit(1)
+        use_syslog = parsed_args.syslog
         if parsed_args.noheader is False:
             h = dict(memory_mb_used="memory_mb_used",
                      memory_mb="memory_mb",
@@ -114,15 +134,15 @@ class Compute(Command):
                      vcpus="vcpus", vcpus_used="vcpus_used",
                      hypervisor_hostname="hypervisor_hostname",
                      current_workload="current_workload")
-            self._print_line(h)
+            self._print_line(h, use_syslog, parsed_args.identifier)
         if parsed_args.noindividual is False:
             stats = self.hypervisors(self.tenant_id, self.compute_endpoint,
                                      self.token, self.tenant_name)
             self.log.debug(stats)
             for s in stats:
-                self._print_line(s)
+                self._print_line(s, use_syslog, parsed_args.identifier)
         if parsed_args.noaggregate is False:
             stat = self.aggregate_hypervisor(self.tenant_id,
                                              self.compute_endpoint,
                                              self.token, self.tenant_name)
-            self._print_line(stat)
+            self._print_line(stat, use_syslog, parsed_args.identifier)

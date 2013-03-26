@@ -50,7 +50,7 @@ class Compute(Command):
             message = ("%s,%s,%s,%s,%s,%s,%s" % (
                        data['memory_mb'], data['current_workload'],
                        data['vcpus'], data['running_vms'],
-                       data['vcpus'], data['memory_mb_used'],
+                       data['vcpus_used'], data['memory_mb_used'],
                        data['hypervisor_hostname']))
             if idstring is not None:
                 message = ("%s,%s" % (idstring, message))
@@ -63,7 +63,7 @@ class Compute(Command):
             self.app.stdout.write(str(data['current_workload']) + ",")
             self.app.stdout.write(str(data['vcpus']) + ",")
             self.app.stdout.write(str(data['running_vms']) + ",")
-            self.app.stdout.write(str(data['vcpus']) + ",")
+            self.app.stdout.write(str(data['vcpus_used']) + ",")
             self.app.stdout.write(str(data['memory_mb_used']) + ",")
             self.app.stdout.write(str(data['hypervisor_hostname']) + "\n")
 

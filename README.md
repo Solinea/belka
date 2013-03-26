@@ -1,12 +1,73 @@
 # Belka
 
-Belka is your tool to explore your OpenStack based cloud.
+Belka is your tool to explore your OpenStack based cloud and return valuable machine readable statistics.
 
 ## Features
 
+### Compute
 
-## Docs
+Belka will query your Nova cluster to find the following stats per hypervisor:
 
+* memory_mb
+* current_workload
+* vcpus
+* running_vms
+* vcpus
+* memory_mb_used
+* hypervisor_hostname
+
+It can also summarize this information.
+
+Here is an example run of belka:
+
+    $ belka compute
+    2013-03-26 05:59:37.166783,memory_mb,current_workload,vcpus,running_vms,vcpus,memory_mb_used,hypervisor_hostname
+    2013-03-26 05:59:37.604805,128916,0,32,1,32,10752,c13.b0.z1
+    2013-03-26 05:59:37.604881,128916,0,32,1,32,4772,c10.b0.z1
+    2013-03-26 05:59:37.604951,128915,0,32,0,32,3072,c9.b0.z1
+    2013-03-26 05:59:37.605020,128915,0,32,1,32,10752,c12.b0.z1
+    2013-03-26 05:59:37.605089,128916,0,32,0,32,3072,c11.b0.z1
+    2013-03-26 05:59:37.666876,644578,0,160,3,160,32420,AllHosts
+
+
+## Usage
+
+Belka can be used as follows:
+
+    $ belka -h
+    usage: belka [--version] [-v] [--log-file LOG_FILE] [-q] [-h] [--debug]
+   
+    belka
+   
+    optional arguments:
+      --version            show program's version number and exit
+      -v, --verbose        Increase verbosity of output. Can be repeated.
+      --log-file LOG_FILE  Specify a file to log output. Disabled by default.
+      -q, --quiet          suppress output except warnings and errors
+      -h, --help           show this help message and exit
+      --debug              show tracebacks on errors
+   
+    Commands:
+      compute        Query compute nodes for statistics
+      help           print detailed help for another command
+
+
+The compute subcommand provides further options:
+
+    $ belka help compute
+    usage: belka compute [-h] [--noheader] [--noindividual] [--noaggregate]
+                         [--syslog] [--identifier IDENTIFIER]
+
+    Query compute nodes for statistics
+
+    optional arguments:
+      -h, --help            show this help message and exit
+      --noheader, -r        Do not print header line
+      --noindividual, -i    Do not print individual hypervisor stats
+      --noaggregate, -a     Do not summarize hypervisor stats
+      --syslog, -s          Send to syslog instead of stdout
+      --identifier IDENTIFIER, -d IDENTIFIER
+                            identifier string to be included in output
 
 ## License
 

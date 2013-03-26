@@ -53,7 +53,7 @@ class Compute(Command):
                        data['vcpus'], data['memory_mb_used'],
                        data['hypervisor_hostname']))
             if idstring is not None:
-                message = ("%s,%s" % (idstring,message))
+                message = ("%s,%s" % (idstring, message))
             syslog.syslog(syslog.LOG_ALERT, message)
         else:
             self.app.stdout.write(str(datetime.now()) + ",")

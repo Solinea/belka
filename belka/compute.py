@@ -49,7 +49,7 @@ class Compute(Command):
         self.app.stdout.write(str(data['running_vms']) + ",")
         self.app.stdout.write(str(data['vcpus']) + ",")
         self.app.stdout.write(str(data['memory_mb_used']) + ",")
-        self.app.stdout.write(str(data['hypervisor_hostname'])+ "\n")
+        self.app.stdout.write(str(data['hypervisor_hostname']) + "\n")
         pass
 
     def aggregate_hypervisor(self, tenant_id, compute_endpoint,
@@ -108,11 +108,11 @@ class Compute(Command):
         self.tenant_name = os.environ.get("OS_TENANT_NAME")
         if parsed_args.noheader is False:
             h = dict(memory_mb_used="memory_mb_used",
-                    memory_mb="memory_mb",
-                    running_vms="running_vms",
-                    vcpus="vcpus", vcpus_used="vcpus_used",
-                    hypervisor_hostname="hypervisor_hostname",
-                    current_workload="current_workload")
+                     memory_mb="memory_mb",
+                     running_vms="running_vms",
+                     vcpus="vcpus", vcpus_used="vcpus_used",
+                     hypervisor_hostname="hypervisor_hostname",
+                     current_workload="current_workload")
             self._csv_header(h)
         if parsed_args.noindividual is False:
             stats = self.hypervisors(self.tenant_id, self.compute_endpoint,
@@ -121,6 +121,7 @@ class Compute(Command):
             for s in stats:
                 self._print_line(s)
         if parsed_args.noaggregate is False:
-            stat = self.aggregate_hypervisor(self.tenant_id, self.compute_endpoint,
-                                     self.token, self.tenant_name)
+            stat = self.aggregate_hypervisor(self.tenant_id,
+                                             self.compute_endpoint,
+                                             self.token, self.tenant_name)
             self._print_line(stat)

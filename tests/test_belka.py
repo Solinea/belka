@@ -1,10 +1,11 @@
-from argparse import ArgumentError
-
 from cliff.app import App
 from cliff.command import Command
 from cliff.commandmanager import CommandManager
 
-from belka import compute
+from belka.compute import Compute as compute
+
+import unittest2
+import unittest
 
 # import mock
 
@@ -41,11 +42,12 @@ from belka import compute
 #         "id": 1}
 #     }'
 
-class TestCompute(Command):
+class TestCompute(unittest.TestCase):
     """Description of command."""
 
 
-    def test_headers():
-        x = {"X-Auth-Token": "abcdefghijkl", "X-Auth-Project-Id": "abcdefghijkl",
-             "User-Agent": "belka", "Accept": "application/json"}
-        assert self.compute.Compute._headers("abcdefghijkl","abcdefghijkl") == x
+    # def test_headers(self):
+    #     x = {"X-Auth-Token": "abcdefghijkl", "X-Auth-Project-Id": "abcdefghijkl",
+    #          "User-Agent": "belka", "Accept": "application/json"}
+    #     y = compute()
+    #     assert y._headers(self,"abcdefghijkl","abcdefghijkl") == x

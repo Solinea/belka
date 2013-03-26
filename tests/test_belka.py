@@ -4,6 +4,8 @@ from cliff.app import App
 from cliff.command import Command
 from cliff.commandmanager import CommandManager
 
+from belka import compute
+
 # import mock
 
 
@@ -39,5 +41,11 @@ from cliff.commandmanager import CommandManager
 #         "id": 1}
 #     }'
 
-def test_to_be_written():
-    pass
+class TestCompute(Command):
+    """Description of command."""
+
+
+    def test_headers():
+        x = {"X-Auth-Token": "abcdefghijkl", "X-Auth-Project-Id": "abcdefghijkl",
+             "User-Agent": "belka", "Accept": "application/json"}
+        assert self.compute.Compute._headers("abcdefghijkl","abcdefghijkl") == x

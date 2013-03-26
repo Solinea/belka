@@ -1,6 +1,6 @@
 Command-line Tool
 =================
-In order to use the CLI, you must provide your OpenStack administrator username, password, tenant, and auth endpoint. Use the corresponding configuration options (``--os-username``, ``--os-password``, ``--os-tenant-id``, and ``--os-auth-url``) or set them in environment variables::
+In order to use the CLI, you must provide your OpenStack **administrator** username, password, tenant, and auth endpoint. Use the corresponding configuration options (``--os-username``, ``--os-password``, ``--os-tenant-id``, and ``--os-auth-url``) or set them in environment variables::
 
     export OS_USERNAME=admin
     export OS_PASSWORD=adminpass
@@ -17,6 +17,11 @@ Once you've configured your authentication parameters, you can run ``ceilometer 
 
 Release Notes
 =============
+
+0.2.0
+-----
+* Pre-alpha release
+* Compute query working with args
 
 0.1.0
 -----

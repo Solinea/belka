@@ -1,3 +1,4 @@
+import ConfigParser
 from datetime import datetime
 import os
 import logging
@@ -31,7 +32,26 @@ class Compute(Command):
         parser.add_argument('--identifier', '-d', action='store',
                             default=None,
                             help="identifier string to be included in output")
+        parser.add_argument('--config', '-c', action='store',
+                            default=None,
+                            help="configuration file to be used")
         return parser
+
+    def _get_credentials(self, config_file):
+        if config_file is None:
+            username = os.environ.get("OS_USERNAME")
+            password = os.environ.get("OS_PASSWORD")
+            tenant_name = os.environ.get("OS_TENANT_NAME")
+            auth_url = os.environ.get("OS_AUTH_URL")
+        else:
+            config = ConfigParser.ConfigParser()
+            config.read(config_file)
+            username = config.get('Default', 'OS_USERNAME')
+            password = config.get('Default', 'OS_PASSWORD')
+            tenant_name = config.get('Default', 'OS_TENANT_NAME')
+            auth_url = config.get('Default', 'OS_AUTH_URL')
+        return dict(username=username, password=password,
+                    tenant_name=tenant_name, auth_url=auth_url)
 
     def _headers(self, token, tenant_id):
         return {"X-Auth-Token": token, "X-Auth-Project-Id": tenant_id,
@@ -111,14 +131,12 @@ class Compute(Command):
         return host_stats
 
     def take_action(self, parsed_args):
-        try:
-            keystone = client.Client(username=os.environ.get("OS_USERNAME"),
-                                     password=os.environ.get("OS_PASSWORD"),
-                                     tenant_name=os.environ.get(
-                                     "OS_TENANT_NAME"),
-                                     auth_url=os.environ.get("OS_AUTH_URL"))
-        except Exception, err:
-            raise RuntimeError(err)
+        creds = self._get_credentials(parsed_args.config)
+        self.log.debug(creds)
+        keystone = client.Client(username=creds["username"],
+                                 password=creds["password"],
+                                 tenant_name=creds["tenant_name"],
+                                 auth_url=creds["auth_url"])
         for serv in keystone.service_catalog.catalog["serviceCatalog"]:
             if serv["type"] == 'compute':
                 self.compute_endpoint = serv["endpoints"][0]['adminURL']

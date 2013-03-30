@@ -1,13 +1,12 @@
-import ConfigParser
 from datetime import datetime
 import os
 import logging
 import requests
 import syslog
 
-from keystoneclient.v2_0 import client
-
 from cliff.command import Command
+
+import token
 
 
 class Compute(Command):
@@ -40,26 +39,6 @@ class Compute(Command):
                             default=None,
                             help="configuration file to be used")
         return parser
-
-    def _get_credentials(self, config_file):
-        if config_file is None:
-            username = os.environ.get("OS_USERNAME")
-            password = os.environ.get("OS_PASSWORD")
-            tenant_name = os.environ.get("OS_TENANT_NAME")
-            auth_url = os.environ.get("OS_AUTH_URL")
-        else:
-            config = ConfigParser.ConfigParser()
-            config.read(config_file)
-            username = config.get('Default', 'OS_USERNAME')
-            password = config.get('Default', 'OS_PASSWORD')
-            tenant_name = config.get('Default', 'OS_TENANT_NAME')
-            auth_url = config.get('Default', 'OS_AUTH_URL')
-        return dict(username=username, password=password,
-                    tenant_name=tenant_name, auth_url=auth_url)
-
-    def _headers(self, token, tenant_id):
-        return {"X-Auth-Token": token, "X-Auth-Project-Id": tenant_id,
-                "User-Agent": "belka", "Accept": "application/json"}
 
     def _individual_hypervisor_stats(self, stats):
         for s in stats:
@@ -143,20 +122,7 @@ class Compute(Command):
         return host_stats
 
     def take_action(self, parsed_args):
-        creds = self._get_credentials(parsed_args.config)
-        self.log.debug(creds)
-        keystone = client.Client(username=creds["username"],
-                                 password=creds["password"],
-                                 tenant_name=creds["tenant_name"],
-                                 auth_url=creds["auth_url"])
-        for serv in keystone.service_catalog.catalog["serviceCatalog"]:
-            if serv["type"] == 'compute':
-                self.compute_endpoint = serv["endpoints"][0]['adminURL']
-                break
-        self.token = keystone.auth_token
-        self.tenant_id = keystone.tenant_id
-        self.tenant_name = os.environ.get("OS_TENANT_NAME")
-        use_syslog = parsed_args.syslog
+        cloud = token.get_token(parsed_args.config)
         if parsed_args.noheader is False:
             h = dict(memory_mb_used="memory_mb_used",
                      memory_mb="memory_mb",
@@ -164,18 +130,20 @@ class Compute(Command):
                      vcpus="vcpus", vcpus_used="vcpus_used",
                      hypervisor_hostname="hypervisor_hostname",
                      current_workload="current_workload")
-            self._print_line(h, use_syslog, parsed_args.splunk,
+            self._print_line(h, parsed_args.syslog, parsed_args.splunk,
                              parsed_args.identifier)
         if parsed_args.noindividual is False:
-            stats = self.hypervisors(self.tenant_id, self.compute_endpoint,
-                                     self.token, self.tenant_name)
+            stats = self.hypervisors(cloud["tenant_id"],
+                                     cloud["compute_endpoint"],
+                                     cloud["token"], cloud["tenant_name"])
             self.log.debug(stats)
             for s in stats:
-                self._print_line(s, use_syslog, parsed_args.splunk,
+                self._print_line(s, parsed_args.syslog, parsed_args.splunk,
                                  parsed_args.identifier)
         if parsed_args.noaggregate is False:
-            stat = self.aggregate_hypervisor(self.tenant_id,
-                                             self.compute_endpoint,
-                                             self.token, self.tenant_name)
-            self._print_line(stat, use_syslog, parsed_args.splunk,
+            stat = self.aggregate_hypervisor(self["tenant_id"],
+                                             self["compute_endpoint"],
+                                             self["token"],
+                                             self["tenant_name"])
+            self._print_line(stat, parsed_args.syslog, parsed_args.splunk,
                              parsed_args.identifier)

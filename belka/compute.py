@@ -29,6 +29,10 @@ class Compute(Command):
         parser.add_argument('--syslog', '-s', action='store_true',
                             default=False,
                             help="Send to syslog instead of stdout")
+        parser.add_argument('--splunk', '-k', action='store_true',
+                            default=False,
+                            help="Print values in key=value format\
+                                  (useful for splunk)")
         parser.add_argument('--identifier', '-d', action='store',
                             default=None,
                             help="identifier string to be included in output")
@@ -63,15 +67,23 @@ class Compute(Command):
             self.app.stdout.write(",".join([str(x) for x in s.values()]))
             self.app.stdout.write("\n")
 
-    def _print_line(self, data, use_syslog, idstring):
+    def _print_line(self, data, use_syslog, splunk, idstring):
         if use_syslog is True:
             if os.uname()[0] == "Darwin":
                 syslog.openlog("Python")
-            message = ("%s,%s,%s,%s,%s,%s,%s" % (
-                       data['memory_mb'], data['current_workload'],
-                       data['vcpus'], data['running_vms'],
-                       data['vcpus_used'], data['memory_mb_used'],
-                       data['hypervisor_hostname']))
+            if splunk is True:
+                message = ("memory=%s,workload=%s,vcpus=%s,instances=%s,\
+                            vcpu_used=%s,memory_used=%s,hypervisor=%s" % (
+                           data['memory_mb'], data['current_workload'],
+                           data['vcpus'], data['running_vms'],
+                           data['vcpus_used'], data['memory_mb_used'],
+                           data['hypervisor_hostname']))
+            else:
+                message = ("%s,%s,%s,%s,%s,%s,%s" % (
+                           data['memory_mb'], data['current_workload'],
+                           data['vcpus'], data['running_vms'],
+                           data['vcpus_used'], data['memory_mb_used'],
+                           data['hypervisor_hostname']))
             if idstring is not None:
                 message = ("%s,%s" % (idstring, message))
             syslog.syslog(syslog.LOG_ALERT, message)
@@ -152,15 +164,18 @@ class Compute(Command):
                      vcpus="vcpus", vcpus_used="vcpus_used",
                      hypervisor_hostname="hypervisor_hostname",
                      current_workload="current_workload")
-            self._print_line(h, use_syslog, parsed_args.identifier)
+            self._print_line(h, use_syslog, parsed_args.splunk,
+                             parsed_args.identifier)
         if parsed_args.noindividual is False:
             stats = self.hypervisors(self.tenant_id, self.compute_endpoint,
                                      self.token, self.tenant_name)
             self.log.debug(stats)
             for s in stats:
-                self._print_line(s, use_syslog, parsed_args.identifier)
+                self._print_line(s, use_syslog, parsed_args.splunk,
+                                 parsed_args.identifier)
         if parsed_args.noaggregate is False:
             stat = self.aggregate_hypervisor(self.tenant_id,
                                              self.compute_endpoint,
                                              self.token, self.tenant_name)
-            self._print_line(stat, use_syslog, parsed_args.identifier)
+            self._print_line(stat, use_syslog, parsed_args.splunk,
+                             parsed_args.identifier)

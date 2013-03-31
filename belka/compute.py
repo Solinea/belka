@@ -6,7 +6,7 @@ import syslog
 
 from cliff.command import Command
 
-import token
+import token as conn
 
 
 class Compute(Command):
@@ -79,9 +79,9 @@ class Compute(Command):
             self.app.stdout.write(str(data['hypervisor_hostname']) + "\n")
 
     def aggregate_hypervisor(self, tenant_id, compute_endpoint,
-                             token, tenant_name):
+                             auth_token, tenant_name):
         url = ("%s/os-hypervisors/statistics" % compute_endpoint)
-        hdr = self._headers(token, tenant_id)
+        hdr = conn.headers(auth_token, tenant_id)
         r = requests.get(url, headers=hdr)
         stat = r.json()['hypervisor_statistics']
         stat['hypervisor_hostname'] = "AllHosts"
@@ -91,7 +91,7 @@ class Compute(Command):
                          token, tenant_name):
         '''Return a list of hypervisor ids in the compute environment'''
         url = ("%s/os-hypervisors" % compute_endpoint)
-        hdr = self._headers(token, tenant_id)
+        hdr = conn.headers(token, tenant_id)
         r = requests.get(url, headers=hdr)
         self.log.debug(r.json())
         hid = [h['id'] for h in r.json()['hypervisors']]
@@ -101,7 +101,7 @@ class Compute(Command):
                            token, tenant_name, hid):
         '''Return dict of a specific hypervisor details'''
         url = ("%s/os-hypervisors/%s" % (compute_endpoint, str(hid)))
-        hdr = self._headers(token, tenant_id)
+        hdr = conn.headers(token, tenant_id)
         r = requests.get(url, headers=hdr)
         stat = r.json()['hypervisor']
         return dict(memory_mb_used=stat['memory_mb_used'],
@@ -122,7 +122,7 @@ class Compute(Command):
         return host_stats
 
     def take_action(self, parsed_args):
-        cloud = token.get_token(parsed_args.config)
+        cloud = conn.get_token(parsed_args.config)
         if parsed_args.noheader is False:
             h = dict(memory_mb_used="memory_mb_used",
                      memory_mb="memory_mb",
@@ -141,9 +141,9 @@ class Compute(Command):
                 self._print_line(s, parsed_args.syslog, parsed_args.splunk,
                                  parsed_args.identifier)
         if parsed_args.noaggregate is False:
-            stat = self.aggregate_hypervisor(self["tenant_id"],
-                                             self["compute_endpoint"],
-                                             self["token"],
-                                             self["tenant_name"])
+            stat = self.aggregate_hypervisor(cloud["tenant_id"],
+                                             cloud["compute_endpoint"],
+                                             cloud["token"],
+                                             cloud["tenant_name"])
             self._print_line(stat, parsed_args.syslog, parsed_args.splunk,
                              parsed_args.identifier)

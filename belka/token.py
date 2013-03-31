@@ -40,15 +40,17 @@ def get_token(config_file):
                              password=creds["password"],
                              tenant_name=creds["tenant_name"],
                              auth_url=creds["auth_url"])
+    compute_endpoint = None
     for serv in keystone.service_catalog.catalog["serviceCatalog"]:
         if serv["type"] == 'compute':
             compute_endpoint = serv["endpoints"][0]['adminURL']
             break
+    storage_endpoint = None
     for serv in keystone.service_catalog.catalog["serviceCatalog"]:
         if serv["type"] == 'storage':
             storage_endpoint = serv["endpoints"][0]['adminURL']
             break
-    return dict(token=keystone.auth_token, tenant=keystone.tenant_id,
+    return dict(token=keystone.auth_token, tenant_id=keystone.tenant_id,
                 tenant_name=creds["tenant_name"],
                 compute_endpoint=compute_endpoint,
                 storage_endpoint=storage_endpoint)

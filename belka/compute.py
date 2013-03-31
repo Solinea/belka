@@ -51,8 +51,8 @@ class Compute(Command):
             if os.uname()[0] == "Darwin":
                 syslog.openlog("Python")
             if splunk is True:
-                message = ("memory=%s,workload=%s,vcpus=%s,instances=%s,\
-                            vcpu_used=%s,memory_used=%s,hypervisor=%s" % (
+                message = ("memory=%s,workload=%s,vcpus=%s,instances=%s,"
+                           "vcpu_used=%s,memory_used=%s,hypervisor=%s" % (
                            data['memory_mb'], data['current_workload'],
                            data['vcpus'], data['running_vms'],
                            data['vcpus_used'], data['memory_mb_used'],

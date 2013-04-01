@@ -3,7 +3,7 @@
 PROJECT = 'belka'
 
 # Change docs/source/conf.py too!
-VERSION = '0.3.1'
+VERSION = '0.4.0'
 
 # Bootstrap installation of Distribute
 # import distribute_setup
@@ -175,6 +175,7 @@ setup(
              ],
         'cliff.belka': [
             'compute = belka.compute:Compute',
+            'objectstorage = belka.objectstorage:Objectstorage',
             ],
         },
 

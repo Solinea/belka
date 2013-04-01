@@ -2,6 +2,47 @@
 
 Belka is your tool to explore your OpenStack based cloud and return valuable machine readable statistics.
 
+
+## Usage
+
+Belka can be used as follows:
+
+    $ belka -h
+    usage: belka [--version] [-v] [--log-file LOG_FILE] [-q] [-h] [--debug]
+   
+    belka
+   
+    optional arguments:
+      --version            show program's version number and exit
+      -v, --verbose        Increase verbosity of output. Can be repeated.
+      --log-file LOG_FILE  Specify a file to log output. Disabled by default.
+      -q, --quiet          suppress output except warnings and errors
+      -h, --help           show this help message and exit
+      --debug              show tracebacks on errors
+   
+    Commands:
+      compute        Query compute nodes for statistics
+      help           print detailed help for another command
+
+
+The compute subcommand provides further options:
+
+    $ belka help compute
+    usage: belka compute [-h] [--noheader] [--noindividual] [--noaggregate]
+                         [--syslog] [--identifier IDENTIFIER]
+
+    Query compute nodes for statistics
+
+    optional arguments:
+      -h, --help            show this help message and exit
+      --noheader, -r        Do not print header line
+      --noindividual, -i    Do not print individual hypervisor stats
+      --noaggregate, -a     Do not summarize hypervisor stats
+      --syslog, -s          Send to syslog instead of stdout
+      --identifier IDENTIFIER, -d IDENTIFIER
+                            identifier string to be included in output
+
+
 ## Features
 
 ### Compute
@@ -28,6 +69,14 @@ Here is an example run of belka:
     2013-03-26 05:59:37.605020,128915,0,32,1,2,10752,c12.b0.z1
     2013-03-26 05:59:37.605089,128916,0,32,0,0,3072,c11.b0.z1
     2013-03-26 05:59:37.666876,644578,0,160,3,4,32420,AllHosts
+
+### Storage
+
+Storage requires a user that has the keystone "ResellerAdmin" role. You can add this to your "admin" user with the following command:
+
+    $ keystone user-role-add --user admin --role ResellerAdmin --tenant admin
+
+
 
 
 ## Usage

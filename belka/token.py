@@ -33,6 +33,16 @@ def get_credentials(config_file):
                 tenant_name=tenant_name, auth_url=auth_url)
 
 
+def get_tenants(config_file):
+    creds = get_credentials(config_file)
+    log.debug(creds)
+    keystone = client.Client(username=creds["username"],
+                             password=creds["password"],
+                             tenant_name=creds["tenant_name"],
+                             auth_url=creds["auth_url"])
+    return keystone.tenants.list()
+
+
 def get_token(config_file):
     creds = get_credentials(config_file)
     log.debug(creds)
@@ -47,7 +57,7 @@ def get_token(config_file):
             break
     storage_endpoint = None
     for serv in keystone.service_catalog.catalog["serviceCatalog"]:
-        if serv["type"] == 'storage':
+        if serv["type"] == 'object-store':
             storage_endpoint = serv["endpoints"][0]['adminURL']
             break
     return dict(token=keystone.auth_token, tenant_id=keystone.tenant_id,

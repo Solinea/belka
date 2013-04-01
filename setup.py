@@ -3,7 +3,7 @@
 PROJECT = 'belka'
 
 # Change docs/source/conf.py too!
-VERSION = '0.4.0'
+VERSION = '0.4.1'
 
 # Bootstrap installation of Distribute
 # import distribute_setup

@@ -46,23 +46,24 @@ class Compute(Command):
             self.app.stdout.write(",".join([str(x) for x in s.values()]))
             self.app.stdout.write("\n")
 
-    def _print_line(self, data, use_syslog, splunk, idstring):
+    def _print_line(self, data, use_syslog, splunk, idstring, cmd="compute"):
         if use_syslog is True:
             if os.uname()[0] == "Darwin":
                 syslog.openlog("Python")
             if splunk is True:
                 message = ("memory=%s,workload=%s,vcpus=%s,instances=%s,"
-                           "vcpu_used=%s,memory_used=%s,hypervisor=%s" % (
+                           "vcpu_used=%s,memory_used=%s,hypervisor=%s,"
+                           "cmd=%s" % (
                            data['memory_mb'], data['current_workload'],
                            data['vcpus'], data['running_vms'],
                            data['vcpus_used'], data['memory_mb_used'],
-                           data['hypervisor_hostname']))
+                           data['hypervisor_hostname'], cmd))
             else:
-                message = ("%s,%s,%s,%s,%s,%s,%s" % (
+                message = ("%s,%s,%s,%s,%s,%s,%s,%s" % (
                            data['memory_mb'], data['current_workload'],
                            data['vcpus'], data['running_vms'],
                            data['vcpus_used'], data['memory_mb_used'],
-                           data['hypervisor_hostname']))
+                           data['hypervisor_hostname'], cmd))
             if idstring is not None:
                 message = ("%s,%s" % (idstring, message))
             syslog.syslog(syslog.LOG_ALERT, message)
@@ -76,7 +77,8 @@ class Compute(Command):
             self.app.stdout.write(str(data['running_vms']) + ",")
             self.app.stdout.write(str(data['vcpus_used']) + ",")
             self.app.stdout.write(str(data['memory_mb_used']) + ",")
-            self.app.stdout.write(str(data['hypervisor_hostname']) + "\n")
+            self.app.stdout.write(str(data['hypervisor_hostname']) + ",")
+            self.app.stdout.write(str("%s\n" % cmd))
 
     def aggregate_hypervisor(self, tenant_id, compute_endpoint,
                              auth_token, tenant_name):
@@ -131,7 +133,7 @@ class Compute(Command):
                      hypervisor_hostname="hypervisor_hostname",
                      current_workload="current_workload")
             self._print_line(h, parsed_args.syslog, parsed_args.splunk,
-                             parsed_args.identifier)
+                             parsed_args.identifier, "command")
         if parsed_args.noindividual is False:
             stats = self.hypervisors(cloud["tenant_id"],
                                      cloud["compute_endpoint"],

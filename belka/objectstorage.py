@@ -37,20 +37,20 @@ class Objectstorage(Command):
                             help="configuration file to be used")
         return parser
 
-    def _print_line(self, data, use_syslog, splunk, idstring):
+    def _print_line(self, data, use_syslog, splunk, idstring, cmd="object"):
         self.log.debug("data is %s" % data)
         if use_syslog is True:
             if os.uname()[0] == "Darwin":
                 syslog.openlog("Python")
             if splunk is True:
                 message = ("containers=%s,object=%s,bytes=%s,"
-                           "name=%s,account=%s," % (
+                           "name=%s,account=%s,cmd=%s" % (
                            data['containers'], data['objects'],
-                           data['bytes'], data['name'], data['tenant']))
+                           data['bytes'], data['name'], data['tenant'], cmd))
             else:
-                message = ("%s,%s,%s,%s,%s,%s" % (
+                message = ("%s,%s,%s,%s,%s,%s,%s" % (
                            data['containers'], data['objects'],
-                           data['bytes'], data['name'], data['tenant']))
+                           data['bytes'], data['name'], data['tenant'], cmd))
             if idstring is not None:
                 message = ("%s,%s" % (idstring, message))
             syslog.syslog(syslog.LOG_ALERT, message)
@@ -62,7 +62,8 @@ class Objectstorage(Command):
             self.app.stdout.write(data['objects'] + ",")
             self.app.stdout.write(data['bytes'] + ",")
             self.app.stdout.write(data['name'] + ",")
-            self.app.stdout.write(data['tenant'] + "\n")
+            self.app.stdout.write(data['tenant'] + ",")
+            self.app.stdout.write("%s\n" % cmd)
 
     def storage_per_tenant(self, config_file, tenant_id, endpoint,
                            token, tenant_name):
@@ -97,7 +98,7 @@ class Objectstorage(Command):
                      name="name",
                      tenant="tenant")
             self._print_line(h, parsed_args.syslog, parsed_args.splunk,
-                             parsed_args.identifier)
+                             parsed_args.identifier, "command")
         if parsed_args.noindividual is False:
             stats = self.storage_per_tenant(parsed_args.config,
                                             cloud["tenant_id"],

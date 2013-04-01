@@ -8,6 +8,7 @@ from cliff.command import Command
 
 import token as conn
 
+
 class Objectstorage(Command):
     '''Query object storage for usage statistics'''
 
@@ -42,7 +43,8 @@ class Objectstorage(Command):
             if os.uname()[0] == "Darwin":
                 syslog.openlog("Python")
             if splunk is True:
-                message = ("containers=%s,object=%s,bytes=%s,name=%s,account=%s," % (
+                message = ("containers=%s,object=%s,bytes=%s,"
+                           "name=%s,account=%s," % (
                            data['containers'], data['objects'],
                            data['bytes'], data['name'], data['tenant']))
             else:
@@ -77,7 +79,8 @@ class Objectstorage(Command):
             self.log.debug(r.headers)
             self.log.debug(r.text)
             if r.status_code is 204:
-                stats.append(dict(containers=r.headers['x-account-container-count'],
+                stats.append(dict(containers=
+                                  r.headers['x-account-container-count'],
                                   objects=r.headers['x-account-object-count'],
                                   bytes=r.headers['x-account-bytes-used'],
                                   tenant=t.id,

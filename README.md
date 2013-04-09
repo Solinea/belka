@@ -120,7 +120,7 @@ The compute subcommand provides further options:
 
 ## License
 
-Copyright (c) 2013 Solinea, Inc. (ken@solinea.com)
+Copyright (c) 2013 Solinea, Inc. (code@solinea.com)
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.

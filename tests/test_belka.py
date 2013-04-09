@@ -1,25 +1,25 @@
 # Copyright (c) 2013 Solinea, Inc. (ken@solinea.com)
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #     http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from cliff.app import App
-from cliff.command import Command
-from cliff.commandmanager import CommandManager
+# from cliff.app import App
+# from cliff.command import Command
+# from cliff.commandmanager import CommandManager
 
-from belka.compute import Compute as compute
-
-import unittest2
-import unittest
+# from belka.compute import Compute as compute
+#
+# import unittest2
+# import unittest
 
 # import mock
 
@@ -32,11 +32,11 @@ import unittest
 #     {"id": 4, "hypervisor_hostname": "c12.b0.z1"},
 #     {"id": 5, "hypervisor_hostname": "c11.b0.z1"}
 #     ]}"
-# 
+#
 # http://10.11.191.253:8774/v1.1/07ab2eda41f944c2a7a90c5708831450/os-hypervisors/1
-# 
-# individual_host = '{"hypervisor": 
-#     {"service": 
+#
+# individual_host = '{"hypervisor":
+#     {"service":
 #         {"host": "10.11.128.23", "id": 12},
 #         "vcpus_used": 4,
 #         "hypervisor_type": "QEMU",
@@ -56,10 +56,11 @@ import unittest
 #         "id": 1}
 #     }'
 
-class TestCompute(unittest.TestCase):
-    """Description of command."""
-
-
+# class TestCompute(unittest.TestCase):
+#     """Description of command."""
+#     pass
+#
+#
     # def test_headers(self):
     #     x = {"X-Auth-Token": "abcdefghijkl", "X-Auth-Project-Id": "abcdefghijkl",
     #          "User-Agent": "belka", "Accept": "application/json"}
